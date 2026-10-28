@@ -10,7 +10,7 @@ decision chart a coaching staff can print and carry.
 
 ## What it found (2025, scored out of sample)
 
-Every model was fit on 2016-2024 only, so the 2025 season is judged by a model that never saw it.
+Every pricing model was fit on 2016-2024 only, so the 2025 season is judged by models that never saw it. (The league-behaviour model behind the aggressiveness index is cross-fitted within each audited season, by design, and post-kickoff field position uses each season's own average because the kickoff rules changed.)
 
 1. **The league left 15.2 expected wins on the table** (95% CI 12.3 to 18.6) across 3,764
    fourth downs, about half a win per team. **90% of it came from kicking when going was
@@ -163,11 +163,6 @@ is the go-ahead kick).
 **Robustness checks built in.** Each play's agreement rate (share of the 200 refits that make
 the same call), 95% intervals on every play, team and coach total, and a toss-up shading on
 the decision chart.
-
-A note on model choice: I kept every component a classical regression or empirical
-distribution. A tree-boosted win-probability model I tried first scored worse on the same
-holdout (Brier 0.1618 against 0.1597 for the regression), and so did a tree-boosted conversion
-model (0.2267 against 0.2255).
 
 
 ## Limitations

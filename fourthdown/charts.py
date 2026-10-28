@@ -24,7 +24,7 @@ PRESETS = [
     ("Q1, tied", Situation(score_diff=0, qtr=1, quarter_seconds=900)),
     ("Q4 5:00, down 3", Situation(score_diff=-3, qtr=4, quarter_seconds=300)),
     ("Q4 5:00, up 3", Situation(score_diff=3, qtr=4, quarter_seconds=300)),
-    ("Q4 2:00, down 4", Situation(score_diff=-4, qtr=4, quarter_seconds=120, posteam_timeouts=2)),
+    ("Q3 10:00, down 7", Situation(score_diff=-7, qtr=3, quarter_seconds=600)),
 ]
 
 
