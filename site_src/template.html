@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fourth Down Ledger</title>
+<meta name="description" content="NFL fourth-down decision audit: win probability left on the table by every team and coach, a printable decision chart, and a what-should-they-do calculator.">
+<style>/*__STYLE__*/</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="eyebrow">NFL fourth-down decision audit</div>
+  <h1>Fourth Down Ledger</h1>
+  <p class="lede">Every fourth down priced in win probability: go, punt or kick. Which coaches leave wins on the table, a decision chart a staff can print, and a calculator for any situation.</p>
+  <div class="controls" role="group" aria-label="Filters">
+    <label>Season <select id="season"></select></label>
+    <label>Team <select id="team"><option value="">All teams</option></select></label>
+    <button id="theme" type="button" aria-label="Toggle dark mode">Dark mode</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <section class="card" id="chart-card">
+    <div class="card-head">
+      <h2>Decision chart</h2>
+      <button type="button" id="print">Print chart</button>
+    </div>
+    <p class="note">The call with the highest win probability for every yards-to-go and field position. Pale cells are toss-ups (under 0.5 points of win probability). Recomputed live in your browser by the same engine used for the audit.</p>
+    <div class="controls small" role="group" aria-label="Situation">
+      <label>Quarter <select id="g-qtr"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label>
+      <label>Clock <input id="g-clock" value="5:00" size="5" inputmode="numeric"></label>
+      <label>Score diff <input id="g-diff" type="number" value="-3" min="-35" max="35"></label>
+      <label>Timeouts <select id="g-to"><option>0</option><option>1</option><option>2</option><option selected>3</option></select></label>
+      <label>Opp timeouts <select id="g-oto"><option>0</option><option>1</option><option>2</option><option selected>3</option></select></label>
+      <label>Spread <input id="g-spread" type="number" value="0" step="0.5" title="pre-game line, positive = offense favoured"></label>
+      <button type="button" id="g-preset-q1">Q1 tied</button>
+    </div>
+    <div id="grid" class="plot" style="height:420px"></div>
+  </section>
+
+  <section class="card" id="calc-card">
+    <h2>What should they do?</h2>
+    <div class="calc">
+      <form id="calc" class="controls small" onsubmit="return false">
+        <label>4th &amp; <input id="c-ytg" type="number" value="2" min="1" max="30"></label>
+        <label>Ball on <select id="c-side"><option value="opp">opp</option><option value="own">own</option></select>
+          <input id="c-yl" type="number" value="45" min="1" max="50"></label>
+        <label>Quarter <select id="c-qtr"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label>
+        <label>Clock <input id="c-clock" value="5:00" size="5"></label>
+        <label>Score diff <input id="c-diff" type="number" value="-3"></label>
+        <label>Timeouts <select id="c-to"><option>0</option><option>1</option><option>2</option><option selected>3</option></select></label>
+        <label>Opp timeouts <select id="c-oto"><option>0</option><option>1</option><option>2</option><option selected>3</option></select></label>
+        <label>Spread <input id="c-spread" type="number" value="0" step="0.5"></label>
+        <label><input id="c-indoor" type="checkbox"> Dome</label>
+        <label><input id="c-rec" type="checkbox"> We get 2nd-half kickoff</label>
+      </form>
+      <div id="calc-out" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 id="teams-title">Win probability left on the table</h2>
+    <p class="note">Sum over a team's fourth downs of (win probability of the best call minus that of the call made), measured before the snap, so outcomes never count. A total of 1.0 is one expected win. Bars show 95% bootstrap intervals.</p>
+    <div id="teams-plot" class="plot" style="height:760px"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 id="top-title">Costliest decisions</h2>
+      <label class="note"><input type="checkbox" id="excl-late" checked> Leave out the final minutes (Q4 under 5:00, Q2 under 2:00)</label></div>
+    <p class="note">Plays marked <span class="tag">late</span> fall where the win-probability model is least reliable (see the reliability map below); read those with more caution.</p>
+    <div class="table-wrap"><table id="top"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Teams</h2>
+    <p class="note">Aggressiveness = go rate above (or below) what a league-wide model expects in the same situations, in percentage points. Clear-go follow rate = share of spots where going was clearly right (margin of at least 1 point, same call in 90% of refits) that the team went.</p>
+    <div class="table-wrap"><table id="teams-table" class="sortable"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Head coaches</h2>
+    <div class="table-wrap"><table id="coaches-table" class="sortable"></table></div>
+  </section>
+
+  <section class="card" id="methods">
+    <h2>How it works, and how well</h2>
+    <div id="metrics"></div>
+    <h3>Reliability map</h3>
+    <p class="note">Mean absolute gap between this project's win probability and nflverse's published model on the same 2025 plays (one-score games), by time left. Agreement is within about 2 points for most of the game and loosens in the final two minutes, where clock management dominates.</p>
+    <div class="table-wrap"><table id="reliability"></table></div>
+    <div class="methods-text">
+      <h3>Models (all classical statistics, all fit on 2016-2024 regular and postseason play-by-play)</h3>
+      <ul>
+        <li><b>Expected points:</b> least-squares regression of the next score in the half on a field-position spline, down, log distance and an end-of-half decay.</li>
+        <li><b>Win probability:</b> ridge-penalised logistic regression on score margin, expected points, clock, timeouts, Vegas line and the second-half kickoff, with margin and expected points scaled by the square root of time left.</li>
+        <li><b>Conversion:</b> ridge-penalised logistic regression on third and fourth downs (log distance, field position, goal to go, a fourth-down shift, Vegas line and total, season trend).</li>
+        <li><b>Field goals:</b> logistic regression with a linear spline in distance (knots at 50 and 58 yards), roof and season trend.</li>
+        <li><b>Punts and gains:</b> empirical distributions of the next possession by punt spot, and of yards beyond the marker on a conversion.</li>
+        <li><b>Uncertainty:</b> 200 bootstrap replicates that resample whole games and refit every component. Intervals are 95% unless stated.</li>
+        <li>The 2025 season was held out of every fit and is audited out of sample. nflverse's own win probability is used only as a benchmark.</li>
+      </ul>
+      <h3>Limitations</h3>
+      <ul>
+        <li>No injuries, weather beyond roof type, personnel or play-call quality. A coach may know his kicker is hurt or his line is beaten up.</li>
+        <li>Conversion odds come partly from third downs; fourth-down attempts are a selected sample, so the model may be slightly optimistic in spots where teams rarely go.</li>
+        <li>Each call is scored as if it were a normal play: no fakes, no draw-them-offside, no clock tricks; a fixed amount of clock runs on each branch.</li>
+        <li>The win-probability model is a smooth regression; it is least accurate in the final two minutes of close games, where clock management dominates.</li>
+        <li>Season totals add up probabilities from many plays; they are expected wins, not wins actually lost.</li>
+      </ul>
+      <p class="note">Data: nflverse play-by-play (public GitHub releases). Source code: MIT licence.</p>
+    </div>
+  </section>
+</main>
+<footer class="wrap note">Fourth Down Ledger by Joshua Yeung.</footer>
+<script>/*__PLOTLY__*/</script>
+<script>/*__ENGINE__*/</script>
+<script>/*__DATA__*/</script>
+<script>/*__APP__*/</script>
+</body>
+</html>
