@@ -188,7 +188,7 @@ the decision chart.
 |---|---|
 | Working prototype | `site/index.html` (GitHub Pages via `.github/workflows/pages.yml`) and the `python -m fourthdown` CLI |
 | Public source code (GitHub) | this repository (MIT) |
-| Short description: solution, features, actionable impact | [SUBMISSION.md](SUBMISSION.md) |
+| Short description: solution, features, actionable impact | the summary at the top of this README |
 | Sports analytics on a professional sport with sports data | NFL, nflverse play-by-play 2016-2026 |
 | New project | built for Data Bowl 4.0 |
 

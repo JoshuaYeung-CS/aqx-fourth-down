@@ -5,3 +5,7 @@ __pycache__/
 .pytest_cache/
 artifacts/cache/
 .DS_Store
+
+# Local working notes
+HANDOFF.md
+SUBMISSION.md
